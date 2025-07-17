@@ -29,6 +29,7 @@ const Header: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const userDropdownRef = useRef<HTMLDivElement>(null);
+  const userDropdownCloseTimeout = useRef<NodeJS.Timeout | null>(null);
   // FilterBar state
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('category');
@@ -193,38 +194,53 @@ const Header: React.FC = () => {
             <div
               className="relative"
               ref={userDropdownRef}
-              onMouseEnter={() => setUserDropdownOpen(true)}
-              onMouseLeave={() => setUserDropdownOpen(false)}
+              onMouseEnter={() => {
+                if (userDropdownCloseTimeout.current) {
+                  clearTimeout(userDropdownCloseTimeout.current);
+                }
+                setUserDropdownOpen(true);
+              }}
+              onMouseLeave={() => {
+                if (userDropdownCloseTimeout.current) {
+                  clearTimeout(userDropdownCloseTimeout.current);
+                }
+                userDropdownCloseTimeout.current = setTimeout(() => {
+                  setUserDropdownOpen(false);
+                }, 200);
+              }}
             >
-              <button
-                className="flex items-center space-x-2 text-secondary-700 hover:text-primary-600 px-2 py-1 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                aria-haspopup="true"
-                aria-expanded={userDropdownOpen}
-              >
-                <User className="w-5 h-5" />
-                <span className="text-sm font-medium">{state.user.name}</span>
-                <ChevronDown className="w-4 h-4 ml-1" />
-              </button>
-              {userDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-secondary-200 rounded-lg shadow-lg z-50 animate-fade-in">
-                  <div className="px-4 py-3 text-secondary-700 border-b border-secondary-100 cursor-default">
-                    <div className="font-semibold">{state.user.name}</div>
-                    <div className="text-xs text-secondary-500">{state.user.email}</div>
+              {/* Wrapper ensures both button and dropdown are in the hover area */}
+              <div>
+                <button
+                  className="flex items-center space-x-2 text-secondary-700 hover:text-primary-600 px-2 py-1 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  aria-haspopup="true"
+                  aria-expanded={userDropdownOpen}
+                >
+                  <User className="w-5 h-5" />
+                  <span className="text-sm font-medium">{state.user.name}</span>
+                  <ChevronDown className="w-4 h-4 ml-1" />
+                </button>
+                {userDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-white border border-secondary-200 rounded-lg shadow-lg z-50 animate-fade-in">
+                    <div className="px-4 py-3 text-secondary-700 border-b border-secondary-100 cursor-default">
+                      <div className="font-semibold">{state.user.name}</div>
+                      <div className="text-xs text-secondary-500">{state.user.email}</div>
+                    </div>
+                    <button
+                      className="w-full text-left px-4 py-3 hover:bg-secondary-50 text-secondary-700 transition-colors duration-200"
+                      onClick={handleViewHistory}
+                    >
+                      View History
+                    </button>
+                    <button
+                      className="w-full text-left px-4 py-3 text-secondary-400 cursor-not-allowed"
+                      disabled
+                    >
+                      Logout
+                    </button>
                   </div>
-                  <button
-                    className="w-full text-left px-4 py-3 hover:bg-secondary-50 text-secondary-700 transition-colors duration-200"
-                    onClick={handleViewHistory}
-                  >
-                    View History
-                  </button>
-                  <button
-                    className="w-full text-left px-4 py-3 text-secondary-400 cursor-not-allowed"
-                    disabled
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </nav>
           {/* Mobile menu button */}
