@@ -1,25 +1,28 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AppProvider } from './context/AppContext';
+import HomePage from './pages/HomePage';
+import FavoritesPage from './pages/FavoritesPage';
+import ViewHistoryPage from './pages/ViewHistoryPage';
+import Footer from './components/Footer';
+import ScrollToTopButton from './components/ScrollToTopButton';
+import './index.css';
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AppProvider>
+      <Router>
+        <div className="App">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/favorites" element={<FavoritesPage />} />
+            <Route path="/view-history" element={<ViewHistoryPage />} />
+          </Routes>
+          <ScrollToTopButton />
+          <Footer />
+        </div>
+      </Router>
+    </AppProvider>
   );
 }
 
