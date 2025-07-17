@@ -2,12 +2,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Filter as FilterIcon, Search, Heart, User, Menu, X, ChevronDown, Sparkles } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
-import { categories, levels, priceRanges } from '../data/mockData';
-import { formatPriceRange } from '../utils/helpers';
+import { categories, levels } from '../data/mockData';
 import { apiService } from '../services/api';
 import SearchBar from './SearchBar';
 import Filter from './Filter';
 import SuggestionAI from './SuggestionAI';
+import LogoHomeButton from './LogoHomeButton';
+import FavoritesButton from './FavoritesButton';
+import UserMenu from './UserMenu';
 
 const defaultFilters = {
   priceRange: 'Tất cả',
@@ -28,7 +30,7 @@ const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const userDropdownRef = useRef<HTMLDivElement>(null);
+  const userDropdownRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
   const userDropdownCloseTimeout = useRef<NodeJS.Timeout | null>(null);
   // FilterBar state
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -140,11 +142,27 @@ const Header: React.FC = () => {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   };
-  const tabOptions: Record<TabKey, string[]> = {
-    category: categories,
-    level: levels,
-    priceRange: priceRanges,
-  };
+
+  useEffect(() => {
+    // Only apply on mobile menu open
+    if (!isMobileMenuOpen) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        userDropdownRef.current &&
+        !userDropdownRef.current.contains(event.target as Node)
+      ) {
+        setUserDropdownOpen(false);
+      }
+    }
+    if (userDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [userDropdownOpen, isMobileMenuOpen]);
 
   return (
     <header
@@ -158,17 +176,7 @@ const Header: React.FC = () => {
         {/* First Row: Logo, Navigation, User Menu */}
         <div className="flex justify-between items-center min-h-[72px]">
           {/* Logo */}
-          <button
-            type="button"
-            onClick={handleGoHome}
-            className="flex items-center space-x-2 focus:outline-none"
-            style={{ background: 'none', border: 'none', padding: 0, margin: 0 }}
-          >
-            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">E</span>
-            </div>
-            <span className="text-xl font-bold text-secondary-900">EduMarket</span>
-          </button>
+          <LogoHomeButton onClick={handleGoHome} />
           {/* Desktop Navigation/User Menu (unchanged) */}
           <nav className="hidden md:flex items-center space-x-6">
             <button
@@ -179,69 +187,16 @@ const Header: React.FC = () => {
             >
               Home
             </button>
-            <Link
-              to="/favorites"
-              className="relative text-secondary-700 hover:text-primary-600 transition-colors duration-200"
-            >
-              <Heart className="w-5 h-5" />
-              {favoriteCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {favoriteCount}
-                </span>
-              )}
-            </Link>
+            <FavoritesButton count={favoriteCount} onClick={() => navigate('/favorites')} />
             {/* User Dropdown */}
-            <div
-              className="relative"
-              ref={userDropdownRef}
-              onMouseEnter={() => {
-                if (userDropdownCloseTimeout.current) {
-                  clearTimeout(userDropdownCloseTimeout.current);
-                }
-                setUserDropdownOpen(true);
-              }}
-              onMouseLeave={() => {
-                if (userDropdownCloseTimeout.current) {
-                  clearTimeout(userDropdownCloseTimeout.current);
-                }
-                userDropdownCloseTimeout.current = setTimeout(() => {
-                  setUserDropdownOpen(false);
-                }, 200);
-              }}
-            >
-              {/* Wrapper ensures both button and dropdown are in the hover area */}
-              <div>
-                <button
-                  className="flex items-center space-x-2 text-secondary-700 hover:text-primary-600 px-2 py-1 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                  aria-haspopup="true"
-                  aria-expanded={userDropdownOpen}
-                >
-                  <User className="w-5 h-5" />
-                  <span className="text-sm font-medium">{state.user.name}</span>
-                  <ChevronDown className="w-4 h-4 ml-1" />
-                </button>
-                {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white border border-secondary-200 rounded-lg shadow-lg z-50 animate-fade-in">
-                    <div className="px-4 py-3 text-secondary-700 border-b border-secondary-100 cursor-default">
-                      <div className="font-semibold">{state.user.name}</div>
-                      <div className="text-xs text-secondary-500">{state.user.email}</div>
-                    </div>
-                    <button
-                      className="w-full text-left px-4 py-3 hover:bg-secondary-50 text-secondary-700 transition-colors duration-200"
-                      onClick={handleViewHistory}
-                    >
-                      View History
-                    </button>
-                    <button
-                      className="w-full text-left px-4 py-3 text-secondary-400 cursor-not-allowed"
-                      disabled
-                    >
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+            <UserMenu
+              user={state.user}
+              open={userDropdownOpen}
+              setOpen={setUserDropdownOpen}
+              onViewHistory={handleViewHistory}
+              userDropdownRef={userDropdownRef}
+              userDropdownCloseTimeout={userDropdownCloseTimeout}
+            />
           </nav>
           {/* Mobile menu button */}
           <button
@@ -300,40 +255,17 @@ const Header: React.FC = () => {
                 )}
               </Link>
               {/* User Dropdown for Mobile */}
-              <button
-                className="flex items-center space-x-2 text-secondary-700 hover:text-primary-600 px-2 py-1 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                onClick={() => setUserDropdownOpen((open) => !open)}
-                aria-haspopup="true"
-                aria-expanded={userDropdownOpen}
-              >
-                <User className="w-5 h-5" />
-                <span className="text-sm font-medium">{state.user.name}</span>
-                <ChevronDown className="w-4 h-4 ml-1" />
-              </button>
-              {userDropdownOpen && (
-                <div className="mt-2 w-full bg-white border border-secondary-200 rounded-lg shadow-lg z-50 animate-fade-in">
-                  <div className="px-4 py-3 text-secondary-700 border-b border-secondary-100 cursor-default">
-                    <div className="font-semibold">{state.user.name}</div>
-                    <div className="text-xs text-secondary-500">{state.user.email}</div>
-                  </div>
-                  <button
-                    className="w-full text-left px-4 py-3 hover:bg-secondary-50 text-secondary-700 transition-colors duration-200"
-                    onClick={() => {
-                      setUserDropdownOpen(false);
-                      setIsMobileMenuOpen(false);
-                      navigate('/view-history');
-                    }}
-                  >
-                    View History
-                  </button>
-                  <button
-                    className="w-full text-left px-4 py-3 text-secondary-400 cursor-not-allowed"
-                    disabled
-                  >
-                    Logout
-                  </button>
-                </div>
-              )}
+              <UserMenu
+                user={state.user}
+                open={userDropdownOpen}
+                setOpen={setUserDropdownOpen}
+                onViewHistory={handleViewHistory}
+                userDropdownRef={userDropdownRef}
+                userDropdownCloseTimeout={userDropdownCloseTimeout}
+                isMobile={true}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+                navigate={navigate}
+              />
             </nav>
           </div>
         )}
