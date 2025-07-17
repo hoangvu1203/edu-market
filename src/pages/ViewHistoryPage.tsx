@@ -45,15 +45,34 @@ const ViewHistoryPage: React.FC = () => {
 
         {/* Viewed Products Grid */}
         {viewedProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {viewedProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onViewDetails={handleViewDetails}
-              />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {viewedProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onViewDetails={handleViewDetails}
+                />
+              ))}
+            </div>
+            {/* Xem tất cả sản phẩm button */}
+            <div className="mt-8 text-center">
+              <a
+                href="/"
+                className="btn-secondary"
+                onClick={() => {
+                  // Reset filters, search, and suggestions when navigating home
+                  if (window && window.localStorage) {
+                    window.localStorage.removeItem('edu_marketplace_filters');
+                    window.localStorage.removeItem('edu_marketplace_search');
+                    window.localStorage.removeItem('edu_marketplace_suggestions');
+                  }
+                }}
+              >
+                Xem tất cả sản phẩm
+              </a>
+            </div>
+          </>
         ) : (
           <div className="text-center py-12">
             <History className="w-16 h-16 text-secondary-400 mx-auto mb-4" />
