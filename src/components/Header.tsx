@@ -241,7 +241,8 @@ const Header: React.FC = () => {
             <div className="flex-shrink-0 h-full relative">
               <Filter filters={state.filters} onChange={handleFilterChange} />
             </div>
-            <div className="flex-grow w-full h-full flex items-center">
+            {/* SearchBar chỉ hiện trên desktop */}
+            <div className="flex-grow w-full h-full items-center hidden md:flex">
               <SearchBar value={searchQuery} onChange={handleSearchChange} />
             </div>
             <div className="flex-shrink-0 h-full flex items-center">
@@ -250,7 +251,7 @@ const Header: React.FC = () => {
           </div>
         )}
 
-        {/* Mobile Search */}
+        {/* Mobile SearchBar: chỉ hiện trên mobile */}
         {location.pathname !== '/favorites' && location.pathname !== '/view-history' && (
           <div className="md:hidden pb-4">
             <SearchBar value={searchQuery} onChange={handleSearchChange} />
