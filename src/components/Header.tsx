@@ -208,7 +208,7 @@ const Header: React.FC = () => {
         </div>
         {/* Second Row: Filter, Search, Suggestion */}
         {location.pathname !== '/favorites' && location.pathname !== '/view-history' && (
-          <div className="flex w-full flex-row items-center gap-3 mt-6 pb-2 h-12">
+          <div className="flex w-full flex-row items-center gap-3 mt-6 pb-2">
             <div className="flex-shrink-0 h-full relative">
               <Filter filters={state.filters} onChange={handleFilterChange} />
             </div>
@@ -216,7 +216,8 @@ const Header: React.FC = () => {
             <div className="flex-grow w-full h-full items-center hidden md:flex">
               <SearchBar value={searchQuery} onChange={handleSearchChange} />
             </div>
-            <div className="flex-shrink-0 h-full flex items-center">
+            {/* SuggestionAI button: right-aligned on mobile, normal on desktop */}
+            <div className="flex-shrink-0 h-full flex items-center ml-auto">
               <SuggestionAI loading={state.loading} error={state.error} onSuggest={handleAISuggestions} />
             </div>
           </div>
