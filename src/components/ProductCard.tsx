@@ -45,7 +45,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onViewDetails }) => 
 
   return (
     <div 
-      className="card h-[600px] flex flex-col justify-between p-4 cursor-pointer group"
+      className="card flex flex-col p-4 cursor-pointer group justify-between"
       onClick={handleCardClick}
     >
       {/* Product Image */}
@@ -75,8 +75,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onViewDetails }) => 
           <Heart className={`w-4 h-4 ${isFavorited ? 'fill-current' : ''}`} />
         </button>
       </div>
-      {/* Main Content (flex-1) */}
-      <div className="flex-1 flex flex-col">
+      {/* Main Content */}
+      <div>
         {/* Category */}
         <div className="text-xs text-primary-600 font-medium uppercase tracking-wide">
           {product.category}
@@ -126,8 +126,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onViewDetails }) => 
             </span>
           </div>
         )}
-        {/* Price */}
-        <div className="flex items-center space-x-2 mt-1">
+      </div>
+      {/* Price */}
+      <div>
+        <div className="flex items-center space-x-2">
           <span className="text-lg font-bold text-secondary-900">
             {formatPrice(product.price)}
           </span>
@@ -137,18 +139,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onViewDetails }) => 
             </span>
           )}
         </div>
+        {/* View Details Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleCardClick();
+          }}
+          className="w-full btn-primary mt-2"
+        >
+          Xem chi tiết
+        </button>
       </div>
-      {/* View Details Button pinned to bottom */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          handleCardClick();
-        }}
-        className="w-full btn-primary mt-2"
-        style={{ marginTop: 'auto' }}
-      >
-        Xem chi tiết
-      </button>
     </div>
   );
 };
