@@ -39,9 +39,9 @@ const HomePage: React.FC = () => {
   const isHomeDefault =
     !state.searchQuery &&
     state.suggestions.length === 0 &&
-    state.filters.category === 'All' &&
-    state.filters.level === 'All' &&
-    state.filters.priceRange === 'All';
+    (state.filters.category === 'All' || state.filters.category === 'Tất cả') &&
+    (state.filters.level === 'All' || state.filters.level === 'Tất cả') &&
+    (state.filters.priceRange === 'All' || state.filters.priceRange === 'Tất cả');
 
   // Giới hạn số lượng sản phẩm trên trang chủ, bấm 'Xem thêm' để tăng
   const HOMEPAGE_LIMIT = 8;
@@ -279,19 +279,18 @@ const HomePage: React.FC = () => {
                 </button>
               </div>
             )}
+            {/* 'Xem tất cả sản phẩm' Button after search or filters or suggestions */}
+            {(!isHomeDefault && (state.suggestions.length > 0 || state.searchQuery || displayProducts.length > 0)) && (
+              <div className="mt-8 text-center">
+                <button
+                  onClick={handleViewAllProducts}
+                  className="btn-secondary"
+                >
+                  Xem tất cả sản phẩm
+                </button>
+              </div>
+            )}
           </>
-        )}
-
-        {/* 'Xem tất cả sản phẩm' Button after search or filters or suggestions */}
-        {(state.searchQuery || state.suggestions.length > 0 || !isHomeDefault) && (displayProducts.length > 0) && (
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleViewAllProducts}
-              className="btn-secondary"
-            >
-              Xem tất cả sản phẩm
-            </button>
-          </div>
         )}
       </main>
 
